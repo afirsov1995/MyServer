@@ -50,6 +50,7 @@ public class Server {
     private static final long DEFAULT_TIMER_START_INTERVAL = 300000;
     private static final int MAX_CONNECTIONS_COUNT = DEFAULT_THREAD_POOL_CAPACITY;
     private static final int TIMER_START_DELAY = 0;
+    private static final int SESSION_ID_COOKIE = 0;
     private UUID stopServerKey;
     private final Integer port;
     private final Integer bufferSize;
@@ -145,7 +146,7 @@ public class Server {
 
     private boolean sessionDoesNotExists(Request request) {
         return !(request.getCookie(USER_ID_KEY) != null && sessions.containsKey(request.getCookie(USER_ID_KEY).
-                split(CommonConstants.SEMICOLON_SYMBOL)[0]));
+                split(CommonConstants.SEMICOLON_SYMBOL)[SESSION_ID_COOKIE]));
     }
 
     private HttpHandler getHttpHandler(Map<String, HttpHandler> urlHandlers, Request request) {
