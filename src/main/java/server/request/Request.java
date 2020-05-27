@@ -14,6 +14,7 @@ import java.util.Map;
 
 
 public class Request implements HttpRequest {
+
     private static final int SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_COOKIE_KEY = 0;
     private static final int SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_COOKIE_VALUE = 1;
     private static final int SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_RESOURCE = 0;
@@ -23,10 +24,27 @@ public class Request implements HttpRequest {
     private static final int START_OF_REQUEST_RESOURCE = 1;
     private String resource;
     private String method;
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private HttpSession session;
-    private Map<String, String> parameters;
+    private final Map<String, String> parameters;
     private Map<String, String> cookies = new HashMap<>();
+
+    public Request(List<String> metadata, String parametersLine, String cookiesLine) {
+        String firstLine = metadata.get(HTTPUtils.FIRST_LINE_INDEX);
+        String[] dividedFirstLine = firstLine.split(CommonConstants.SPACE);
+        setMethod(dividedFirstLine[HTTPUtils.METHOD_NAME_INDEX]);
+        setResource(dividedFirstLine[HTTPUtils.RESOURCE_NAME_INDEX].substring(START_OF_REQUEST_RESOURCE)
+                .split(HTTPUtils.GET_REQUEST_PARAMETERS_SEPARATOR)[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_RESOURCE]);
+        parameters = ServerUtils.parseParameters(parametersLine);
+        metadata.stream().skip(1).forEach((s) -> {
+            String[] dividedHeadersLine = s.split(HTTPUtils.HEADERS_KEY_VALUE_SEPARATOR, HTTPUtils.TWO_LINE_DIVIDE);
+            headers.put(dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_KEY], dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_VALUE]
+                    .substring(START_OF_HEADER_VALUE, dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_VALUE].length() - HTTPUtils.END_OF_LINE_HEADER));
+        });
+        if (cookiesLine != null) {
+            cookies = setCookies(cookiesLine);
+        }
+    }
 
     private void setMethod(String method) {
         this.method = method;
@@ -86,22 +104,5 @@ public class Request implements HttpRequest {
     @Override
     public String getParameters(String key) {
         return parameters.get(key);
-    }
-
-    public Request(List<String> metadata, String parametersLine, String cookiesLine) {
-        String firstLine = metadata.get(HTTPUtils.FIRST_LINE_INDEX);
-        String[] dividedFirstLine = firstLine.split(CommonConstants.SPACE);
-        setMethod(dividedFirstLine[HTTPUtils.METHOD_NAME_INDEX]);
-        setResource(dividedFirstLine[HTTPUtils.RESOURCE_NAME_INDEX].substring(START_OF_REQUEST_RESOURCE)
-                .split(HTTPUtils.GET_REQUEST_PARAMETERS_SEPARATOR)[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_RESOURCE]);
-        parameters = ServerUtils.parseParameters(parametersLine);
-        metadata.stream().skip(1).forEach((s) -> {
-            String[] dividedHeadersLine = s.split(HTTPUtils.HEADERS_KEY_VALUE_SEPARATOR, HTTPUtils.TWO_LINE_DIVIDE);
-            headers.put(dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_KEY], dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_VALUE]
-                    .substring(START_OF_HEADER_VALUE, dividedHeadersLine[SUBSTRING_NUMBER_IN_A_SPLIT_STRING_FOR_HEADER_VALUE].length() - HTTPUtils.END_OF_LINE_HEADER));
-        });
-        if (cookiesLine != null) {
-            cookies = setCookies(cookiesLine);
-        }
     }
 }

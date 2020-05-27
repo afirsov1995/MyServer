@@ -15,8 +15,7 @@ public class ResponseWriter {
 
     public void write(Response response, BufferedOutputStream bufferedOutputStream, int bufferSize) throws IOException {
         bufferedOutputStream.write((HTTPUtils.HTTP_VERSION + response.getStatus() + CommonConstants.SPACE + response.getCommentForResponseStatus()
-                + HTTPUtils.REQUEST_HEADERS_END_LINE)
-                .getBytes(Charset.defaultCharset()));
+                + HTTPUtils.REQUEST_HEADERS_END_LINE).getBytes(Charset.defaultCharset()));
         writeHeaders(response, bufferedOutputStream);
         try (BufferedInputStream resourceInputStream = new BufferedInputStream(response.getResource(), bufferSize)) {
             int symbol = resourceInputStream.read();

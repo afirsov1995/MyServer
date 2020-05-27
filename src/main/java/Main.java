@@ -21,4 +21,5 @@ public class Main {
             LOGGER.log(Level.WARNING, "Cant start server, check logs", e);
         }
     }
+
 }

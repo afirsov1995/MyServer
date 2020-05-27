@@ -16,9 +16,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ApplicationLoader {
 
+    private static final Logger LOGGER = Logger.getLogger(ApplicationLoader.class.getName());
+    private static final String JAR_FILES_NOT_FOUND = "did not find any jars";
     private static final String START_TO_FILE_PATH = "jar:file:";
     private static final String END_TO_FILE_PATH = "!/";
     private static final String CLASS_FILE = ".class";
@@ -34,7 +38,10 @@ public class ApplicationLoader {
         Map<String, HttpHandler> urlHandlers = new HashMap<>();
         File catalog = new File(pathToCatalogWithURLModules);
         String[] filesInCatalog = catalog.list();
-        assert filesInCatalog != null;
+        if(filesInCatalog == null){
+            LOGGER.log(Level.INFO, JAR_FILES_NOT_FOUND);
+            return urlHandlers;
+        }
         for (String file : filesInCatalog) {
             if (file.contains(JAR_FILE)) {
                 JarFile jarFile = new JarFile(pathToCatalogWithURLModules + file);

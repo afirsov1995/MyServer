@@ -18,6 +18,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -41,20 +43,20 @@ public class Server {
     private static final String HOST_KEY = "host";
     private static final String PATH_TO_RESOURCES_KEY = "pathToResources";
     private static final String DEFAULT_HOST = "127.0.0.1";
-    private static final int DEFAULT_PORT = 1488;
+    private static final int DEFAULT_PORT = 1483;
     private static final int DEFAULT_BUFFER_SIZE = 10485760;
     private static final int DEFAULT_THREAD_POOL_CAPACITY = 20;
-    private static final int MAX_CONNECTIONS_COUNT = DEFAULT_THREAD_POOL_CAPACITY;
-    private static final int TIMER_START_DELAY = 0;
     private static final long DEFAULT_SESSION_LIFE_TIME = 600000;
     private static final long DEFAULT_TIMER_START_INTERVAL = 300000;
+    private static final int MAX_CONNECTIONS_COUNT = DEFAULT_THREAD_POOL_CAPACITY;
+    private static final int TIMER_START_DELAY = 0;
     private UUID stopServerKey;
-    private Integer port;
-    private Integer bufferSize;
-    private Map<String, HttpSession> sessions = new HashMap<>();
-    private ExecutorService threadPool;
-    private Map<String, HttpHandler> urlHandlers = new HashMap<>();
-    private Properties properties;
+    private final Integer port;
+    private final Integer bufferSize;
+    private final ConcurrentMap<String, HttpSession> sessions = new ConcurrentHashMap<>();
+    private final ExecutorService threadPool;
+    private final Map<String, HttpHandler> urlHandlers = new HashMap<>();
+    private final Properties properties;
     private boolean serverIsAlive;
 
     public Server(Properties properties)
@@ -62,8 +64,8 @@ public class Server {
         this.properties = properties;
         ApplicationLoader applicationLoader = new ApplicationLoader();
         urlHandlers.putAll(applicationLoader.load(PATH_TO_CATALOG_WITH_URL_MODULE));
-        this.port = Optional.ofNullable(properties.getProperty(PORT_KEY)).map(Integer::parseInt).orElse(DEFAULT_PORT);
-        this.bufferSize = Optional.ofNullable(properties.getProperty(BUFFER_SIZE_KEY)).map(Integer::parseInt).orElse(DEFAULT_BUFFER_SIZE);
+        port = Optional.ofNullable(properties.getProperty(PORT_KEY)).map(Integer::parseInt).orElse(DEFAULT_PORT);
+        bufferSize = Optional.ofNullable(properties.getProperty(BUFFER_SIZE_KEY)).map(Integer::parseInt).orElse(DEFAULT_BUFFER_SIZE);
         threadPool = Executors.newFixedThreadPool(Optional.ofNullable(properties.getProperty(THREAD_POOL_CAPACITY_KEY)).map(Integer::parseInt)
                 .orElse(DEFAULT_THREAD_POOL_CAPACITY));
         serverIsAlive = true;
